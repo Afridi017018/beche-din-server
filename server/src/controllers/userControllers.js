@@ -5,49 +5,49 @@ const { jwtSecret } = require("../secret");
 
 const userRegister = async (req, res) => {
 
-    try {
+  try {
 
-        const {name, email, password} = req.body;
-        
+    const { name, email, password } = req.body;
 
-        const user = await User.findOne({ email: email});
-        if (user) {
-          throw new Error("User already exists");
-        }
-    
 
-        
-        const newUser = new User({
-            name,
-            email,
-            password
-        });
+    const user = await User.findOne({ email: email });
+    if (user) {
+      throw new Error("User already exists");
+    }
 
-        await newUser.save();
 
-        res.json({
-          
-          success: true,
-          message: "User created successfully",
-          user: newUser
-        });
 
-      } catch (error) {
-        res.status(500).json({
-          success: false,
-          message: error.message,
-        });
-      }
+    const newUser = new User({
+      name,
+      email,
+      password
+    });
+
+    await newUser.save();
+
+    res.json({
+
+      success: true,
+      message: "User created successfully",
+      user: newUser
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 
 }
 
 
 
 
-const userLogin = async(req,res)=>{
+const userLogin = async (req, res) => {
 
   try {
-    const {email, password} = req.body;
+    const { email, password } = req.body;
 
     const user = await User.findOne({ email: email });
     if (!user) {
@@ -69,7 +69,7 @@ const userLogin = async(req,res)=>{
       expiresIn: "30d",
     });
 
-  
+
     res.json({
       success: true,
       message: "User logged in successfully",
@@ -88,4 +88,38 @@ const userLogin = async(req,res)=>{
 
 
 
-module.exports = { userRegister, userLogin };
+const getCurrentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    res.json({
+      success: true,
+      message: "User fetched successfully",
+      data: user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json({
+      success: true,
+      message: "Users fetched successfully",
+      data: users,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+
+module.exports = { userRegister, userLogin, getCurrentUser, getAllUsers };
