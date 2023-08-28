@@ -44,4 +44,25 @@ const getAllProducts = async (req, res) => {
 
 }
 
-module.exports = { addProduct, getAllProducts };
+
+const updateProduct = async (req,res)=>{
+    try {
+        
+        await Product.findByIdAndUpdate(req.params.id, req.body)
+
+        res.json({
+            success: true,
+            message: "Product updated successfully"
+        })
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+
+}
+
+module.exports = { addProduct, getAllProducts, updateProduct };
