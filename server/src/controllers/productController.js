@@ -1,8 +1,4 @@
 const Product = require('../models/productModel');
-
-const fs = require('fs').promises;
-const os = require('os');
-const path = require('path');
 const cloudinary = require('../config/cloudinaryConfig');
 const streamifier = require('streamifier');
 
@@ -16,12 +12,12 @@ const addProduct = async (req, res) => {
         for (const imageStream of imageStreams) {
             await new Promise((resolve, reject) => {
                 const cld_upload_stream = cloudinary.uploader.upload_stream({
-                    folder: "foo"
+                    folder: "beche-din/product-images"
                 }, (error, result) => {
                     if (result) {
                         const { secure_url, public_id } = result;
-                        imageUrls.push({public_id, secure_url} );
-                        resolve(); 
+                        imageUrls.push({ public_id, secure_url });
+                        resolve();
                     } else {
                         reject(error);
                     }
@@ -32,8 +28,8 @@ const addProduct = async (req, res) => {
         }
 
         // console.log({ ...JSON.parse(req.body.payload), seller: req.userId, images: imageUrls})
-  
-        const newProduct = new Product({ ...JSON.parse(req.body.payload), seller: req.userId, images: imageUrls})
+
+        const newProduct = new Product({ ...JSON.parse(req.body.payload), seller: req.userId, images: imageUrls })
         await newProduct.save();
 
         res.json({
@@ -81,22 +77,22 @@ const updateProduct = async (req, res) => {
 
         const product = await Product.findById(req.params.id);
         const imageUrls = product.images;
-        
+
 
         const images = req.files;
         const imageStreams = images.map(image => streamifier.createReadStream(image.buffer));
 
-       
+
 
         for (const imageStream of imageStreams) {
             await new Promise((resolve, reject) => {
                 const cld_upload_stream = cloudinary.uploader.upload_stream({
-                    folder: "foo"
+                    folder: "beche-din/product-images"
                 }, (error, result) => {
                     if (result) {
                         const { secure_url, public_id } = result;
-                        imageUrls.push({public_id, secure_url} );
-                        resolve(); 
+                        imageUrls.push({ public_id, secure_url });
+                        resolve();
                     } else {
                         reject(error);
                     }
@@ -107,7 +103,7 @@ const updateProduct = async (req, res) => {
         }
 
 
-        await Product.findByIdAndUpdate(req.params.id, {...JSON.parse(req.body.payload), images: imageUrls})
+        await Product.findByIdAndUpdate(req.params.id, { ...JSON.parse(req.body.payload), images: imageUrls })
 
         res.json({
             success: true,
@@ -126,42 +122,91 @@ const updateProduct = async (req, res) => {
 
 
 
-// const loadImages = async (req, res) => {
-//     try {
-
-//         const { id } = req.params;
-
-//         const imageData = await Product.findById(id);
-
-//         // console.log(imageData);
-//         //  imageData.images.push(
-//         //     {
-//         //         "image_id": "yjkvraxe10lp4clly1a9",
-//         //         "image": "https://res.cloudinary.com/dmmdqic2v/image/upload/v1693467175/yjkvraxe10lp4clly1a9.png"
-//         //     },
-//         //     {
-//         //         "image_id": "l5cpz1kxaigqiupmdg9a",
-//         //         "image": "https://res.cloudinary.com/dmmdqic2v/image/upload/v1693467177/l5cpz1kxaigqiupmdg9a.png"
-//         //     },
-//         //     {
-//         //         "image_id": "rtb4nc2eojet78twc9rs",
-//         //         "image": "https://res.cloudinary.com/dmmdqic2v/image/upload/v1693467179/rtb4nc2eojet78twc9rs.png"
-//         //     }
-//         // )
-
-//         // await Product.findByIdAndUpdate(id,{images: imageData.images})
- 
-//         res.send(imageData.images)
-
-
-//     } catch (error) {
-//         res.status(500).json({
-//             success: false,
-//             message: error.message,
-//         });
-//     }
-// }
 
 
 
-module.exports = { addProduct, getAllProducts, updateProduct};
+const deleteProduct = async (req, res) => {
+
+    try {
+        const data = await Product.findByIdAndDelete(req.params.id);
+
+        const deleteImage = (publicId) => {
+            cloudinary.uploader.destroy(publicId, (error, result) => {
+                if (result) {
+                    console.log(`Image deleted: ${publicId}`);
+                } else {
+                    console.error(`Error deleting image ${publicId}:`, error);
+                }
+            });
+        };
+
+        data.images.forEach((e) => {
+            deleteImage(e.public_id);
+        })
+
+
+        res.json({
+            success: true,
+            message: "Product deleted successfully"
+        })
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+
+    }
+
+}
+
+
+
+
+const deleteSingleImage = async (req, res) => {
+
+    try {
+
+        const { imageId, productId } = req.query;
+
+        const deleteImage = (publicId) => {
+            cloudinary.uploader.destroy(publicId, (error, result) => {
+                if (result) {
+                    console.log(`Image deleted: ${publicId}`);
+                } else {
+                    console.error(`Error deleting image ${publicId}:`, error);
+                }
+            });
+        };
+
+        deleteImage(imageId);
+
+
+        data = await Product.findById(productId);
+        const images = data.images.filter((e) => e.public_id !== imageId)
+
+        await Product.findByIdAndUpdate(productId, { images: images });
+
+
+        res.json({
+            success: true,
+            message: "Image deleted successfully"
+        })
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+
+
+}
+
+
+
+
+
+
+module.exports = { addProduct, getAllProducts, updateProduct, deleteProduct, deleteSingleImage };
