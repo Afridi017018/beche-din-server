@@ -53,7 +53,29 @@ const addProduct = async (req, res) => {
 const getAllProducts = async (req, res) => {
 
     try {
-        const products = await Product.find();
+
+        const { seller } = req.body
+
+        // console.log(seller)
+
+        let products = [];
+        let filters = {};
+        if (seller) {
+
+            filters.seller = seller;
+
+            products = await Product.find(
+                filters
+            ).populate("seller").sort({ createdAt: -1 });
+            //    console.log(filters)
+        }
+
+        else {
+            products = await Product.find(
+                filters
+            ).populate("seller").sort({ createdAt: -1 });
+        }
+
 
         res.json({
             success: true,
@@ -103,7 +125,7 @@ const updateProduct = async (req, res) => {
         }
 
 
-        await Product.findByIdAndUpdate(req.params.id, { ...JSON.parse(req.body.payload), images: imageUrls })
+        await Product.findByIdAndUpdate(req.params.id, { ...JSON.parse(req.body.payload), images: imageUrls, status: "pending" })
 
         res.json({
             success: true,
@@ -208,5 +230,33 @@ const deleteSingleImage = async (req, res) => {
 
 
 
+const updateProductStatus = async (req,res)=>{
 
-module.exports = { addProduct, getAllProducts, updateProduct, deleteProduct, deleteSingleImage };
+    try {
+
+        const {status} = req.body;
+        const {id} = req.params;
+
+        await Product.findByIdAndUpdate(id,{status})
+
+        res.json({
+            success: true,
+            message: "Product status updated successfully"
+        })
+    
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+
+
+
+
+}
+
+
+
+
+module.exports = { addProduct, getAllProducts, updateProduct, deleteProduct, deleteSingleImage, updateProductStatus };
