@@ -54,7 +54,7 @@ const getAllProducts = async (req, res) => {
 
     try {
 
-        const { seller } = req.body
+        const { seller, status } = req.body
 
         // console.log(seller)
 
@@ -64,17 +64,21 @@ const getAllProducts = async (req, res) => {
 
             filters.seller = seller;
 
-            products = await Product.find(
-                filters
-            ).populate("seller").sort({ createdAt: -1 });
+            // products = await Product.find(
+            //     filters
+            // ).populate("seller").sort({ createdAt: -1 });
             //    console.log(filters)
         }
 
-        else {
+        if(status)
+        {
+            filters.status = status;
+        }
+        // else {
             products = await Product.find(
                 filters
             ).populate("seller").sort({ createdAt: -1 });
-        }
+        // }
 
 
         res.json({

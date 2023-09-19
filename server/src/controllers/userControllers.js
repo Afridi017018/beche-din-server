@@ -45,7 +45,7 @@ const userRegister = async (req, res) => {
 
 
 const userLogin = async (req, res) => {
-console.log(req.body)
+  console.log(req.body)
   try {
     const { email, password } = req.body;
 
@@ -107,7 +107,7 @@ const getCurrentUser = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    const users = await User.find().sort({ createdAt: -1 });;
     res.json({
       success: true,
       message: "Users fetched successfully",
@@ -122,4 +122,27 @@ const getAllUsers = async (req, res) => {
 }
 
 
-module.exports = { userRegister, userLogin, getCurrentUser, getAllUsers };
+const updateUserStatus = async (req, res) => {
+
+  try {
+    const { status } = req.body;
+    const { id } = req.params;
+
+    await User.findByIdAndUpdate(id, { status });
+
+    res.json({
+      success: true,
+      message: "Users status updated successfully",
+      data: users,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+
+
+module.exports = { userRegister, userLogin, getCurrentUser, getAllUsers, updateUserStatus };
