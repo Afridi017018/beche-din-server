@@ -97,6 +97,31 @@ const getAllProducts = async (req, res) => {
 }
 
 
+
+
+const getProductById = async (req,res)=>{
+    try {
+
+         const product = await Product.findById(req.params.id).populate({
+            path: "seller",
+            select: "name email"
+        });
+
+        res.json({
+            success: true,
+            product
+        })
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
+
+
 const updateProduct = async (req, res) => {
     try {
 
@@ -263,4 +288,4 @@ const updateProductStatus = async (req,res)=>{
 
 
 
-module.exports = { addProduct, getAllProducts, updateProduct, deleteProduct, deleteSingleImage, updateProductStatus };
+module.exports = { addProduct, getAllProducts, updateProduct, deleteProduct, deleteSingleImage, updateProductStatus, getProductById };

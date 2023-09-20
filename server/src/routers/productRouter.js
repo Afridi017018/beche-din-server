@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { addProduct, getAllProducts, updateProduct, deleteProduct, deleteSingleImage, updateProductStatus} = require('../controllers/productController');
+const { addProduct, getAllProducts, updateProduct, deleteProduct, deleteSingleImage, updateProductStatus, getProductById} = require('../controllers/productController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const upload = require('../config/multerConfig');
 
@@ -10,6 +10,7 @@ const upload = require('../config/multerConfig');
 
 router.post("/add-product", authMiddleware, upload.array('images'), addProduct);
 router.post("/get-all-products", authMiddleware, getAllProducts);
+router.get("/get-product-by-id/:id", getProductById);
 router.put("/update-product/:id", authMiddleware, upload.array('images'), updateProduct);
 router.delete("/delete-product/:id", authMiddleware, deleteProduct);
 router.delete("/delete-single-image", authMiddleware, deleteSingleImage);
