@@ -54,9 +54,9 @@ const getAllProducts = async (req, res) => {
 
     try {
 
-        const { seller, status } = req.body
+        const { seller, category = [], age = [], status } = req.body
 
-        // console.log(seller)
+        // console.log(req.body)
 
         let products = [];
         let filters = {};
@@ -74,6 +74,21 @@ const getAllProducts = async (req, res) => {
         {
             filters.status = status;
         }
+
+        if(category.length > 0){
+            filters.category = {$in: category};
+        }
+
+        if (age.length > 0) {
+            age.forEach((item) => {
+              const fromAge = item.split("-")[0];
+              const toAge = item.split("-")[1];
+              filters.age = { $gte: fromAge, $lte: toAge };
+            });
+          }
+
+          
+
         // else {
             products = await Product.find(
                 filters
